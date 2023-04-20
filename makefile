@@ -19,6 +19,7 @@ ifeq ($(PREFIX),)
 endif
 
 install: sshclip sshclipserver
+	./sshclipserver -x || true
 	install -m 755 sshclip       $(DESTDIR)$(PREFIX)/bin
 	install -m 755 sshclipserver $(DESTDIR)$(PREFIX)/bin
 
