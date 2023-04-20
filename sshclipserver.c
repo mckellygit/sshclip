@@ -316,6 +316,8 @@ int LoadCertificates(SSL_CTX* ctx, char* CertFile, char* KeyFile)
 
 int CheckCert(SSL* ssl)
 {
+    // TODO: should log errors to syslog ...
+
     X509 *cert;
     char *line;
 
@@ -347,6 +349,8 @@ int CheckCert(SSL* ssl)
 
 void Servlet(SSL* ssl)
 {
+    // TODO: should log errors to syslog ...
+
     if (SSL_accept(ssl) == -1)
     {
         ERR_print_errors_fp(stderr);
@@ -427,6 +431,8 @@ void Servlet(SSL* ssl)
 
 void Servlet2(int sock)
 {
+    // TODO: should log errors to syslog ...
+
     char cmdstr[1000];
     int bytes = read(sock, cmdstr, 18);
     if (bytes == 0)
@@ -571,6 +577,8 @@ int main(int argc, char *argv[])
             SSL_CTX_free(ctx);
         exit(1);
     }
+
+    // TODO: from here on out should use syslog instead of stderr ...
 
     while (1)
     {
