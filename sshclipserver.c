@@ -120,10 +120,11 @@ int ServerCheck(int act_server_port)
     struct hostent *host;
     struct sockaddr_in addr;
 
+    // should not echo any error text ...
+
     sd = socket(PF_INET, SOCK_STREAM, 0);
     if (sd < 0)
     {
-        perror("socket");
         return -1;
     }
 
@@ -133,7 +134,6 @@ int ServerCheck(int act_server_port)
 
     if ( (host = gethostbyname("localhost")) == NULL )
     {
-        perror("localhost");
         return -1;
     }
 
@@ -151,7 +151,6 @@ int ServerCheck(int act_server_port)
 
     if (connect(sd, (struct sockaddr *)&addr, sizeof(addr)) != 0)
     {
-        perror("connect");
         close(sd);
         return -1;
     }
@@ -164,6 +163,8 @@ int ServerEnd(int act_server_port)
 {
     int sd;
     struct sockaddr_un ctrl_addr;
+
+    // should not echo any error text ...
 
     sd = socket(PF_UNIX, SOCK_STREAM, 0);
     if (sd < 0)
@@ -209,6 +210,8 @@ int OpenListener(int port, int *sd, int *ctld)
 {
     struct hostent *host;
     struct sockaddr_in addr;
+
+    // should not echo any error text ...
 
     *sd = socket(PF_INET, SOCK_STREAM, 0);
     if (*sd < 0)

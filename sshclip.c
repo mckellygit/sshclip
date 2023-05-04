@@ -43,6 +43,8 @@ int use_tls = 0;
  *     sshclip (it connects to localhost:22221 - which gets sent through tunnel to originating-host:22222)
  */
 
+// TODO: should we output errors to stderr ?
+
 int OpenConnection(const char *hostname, int port)
 {
     int sd;
