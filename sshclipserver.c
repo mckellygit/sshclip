@@ -120,18 +120,25 @@ int ServerCheck(int act_server_port)
     struct hostent *host;
     struct sockaddr_in addr;
 
+    sd = socket(PF_INET, SOCK_STREAM, 0);
+    if (sd < 0)
+    {
+        perror("socket");
+        return -1;
+    }
+
+    bzero(&addr, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(act_server_port);
+
     if ( (host = gethostbyname("localhost")) == NULL )
     {
         perror("localhost");
         return -1;
     }
 
-    sd = socket(PF_INET, SOCK_STREAM, 0);
-
-    bzero(&addr, sizeof(addr));
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(act_server_port);
-    addr.sin_addr.s_addr = *(long*)(host->h_addr);
+    // addr.sin_addr.s_addr = *(long*)(host->h_addr);
+    memcpy((char *)&addr.sin_addr.s_addr, host->h_addr_list[0], host->h_length);
 
     // hack to set connect time without needing NONBLOCK + poll ...
 
@@ -144,6 +151,7 @@ int ServerCheck(int act_server_port)
 
     if (connect(sd, (struct sockaddr *)&addr, sizeof(addr)) != 0)
     {
+        perror("connect");
         close(sd);
         return -1;
     }
@@ -158,6 +166,10 @@ int ServerEnd(int act_server_port)
     struct sockaddr_un ctrl_addr;
 
     sd = socket(PF_UNIX, SOCK_STREAM, 0);
+    if (sd < 0)
+    {
+        return -1;
+    }
 
     bzero(&ctrl_addr, sizeof(ctrl_addr));
     ctrl_addr.sun_family = AF_UNIX;
@@ -217,15 +229,20 @@ int OpenListener(int port, int *sd, int *ctld)
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
 
+    // addr.sin_addr.s_addr = htonl(INADDR_ANY);
+
     // only accept connection from localhost ...
+
+    // addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+    // addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
     if ( (host = gethostbyname("localhost")) == NULL )
     {
         return -1;
     }
-    // addr.sin_addr.s_addr = INADDR_ANY;
-    // addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-    addr.sin_addr.s_addr = *(long*)(host->h_addr);
+
+    // addr.sin_addr.s_addr = *(long*)(host->h_addr);
+    memcpy((char *)&addr.sin_addr.s_addr, host->h_addr_list[0], host->h_length);
 
     if (bind(*sd, (struct sockaddr *)&addr, sizeof(addr)) != 0)
     {
@@ -391,7 +408,7 @@ void Servlet(SSL* ssl)
             return;
         }
 
-        if ( (myuid != getuid()) || (myeuid != geteuid()) )
+        if ( ((uid_t)myuid != getuid()) || ((uid_t)myeuid != geteuid()) )
         {
             fprintf(stderr, "Error not valud client user/euser id\n");
             return;
@@ -457,7 +474,7 @@ void Servlet2(int sock)
         return;
     }
 
-    if ( (myuid != getuid()) || (myeuid != geteuid()) )
+    if ( ((uid_t)myuid != getuid()) || ((uid_t)myeuid != geteuid()) )
     {
         fprintf(stderr, "Error not valid client user/euser id\n");
         return;

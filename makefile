@@ -1,6 +1,6 @@
 
 CC = gcc
-CFLAGS = -Wall -O1 -g
+CFLAGS = -Wall -Wextra -O1 -g3 -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion -Wdouble-promotion
 LIBS = -lcrypto -lssl
 
 all: sshclipserver sshclip

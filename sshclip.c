@@ -49,18 +49,27 @@ int OpenConnection(const char *hostname, int port)
     struct hostent *host;
     struct sockaddr_in addr;
 
+    sd = socket(PF_INET, SOCK_STREAM, 0);
+    if (sd < 0)
+    {
+        perror("socket");
+        return -1;
+    }
+
+    bzero(&addr, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(port);
+
+    // addr.sin_addr.s_addr = htonl(INADDR_ANY);
+
     if ( (host = gethostbyname(hostname)) == NULL )
     {
         perror(hostname);
         return -1;
     }
 
-    sd = socket(PF_INET, SOCK_STREAM, 0);
-
-    bzero(&addr, sizeof(addr));
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(port);
-    addr.sin_addr.s_addr = *(long*)(host->h_addr);
+    // addr.sin_addr.s_addr = *(long*)(host->h_addr);
+    memcpy((char *)&addr.sin_addr.s_addr, host->h_addr_list[0], host->h_length);
 
     // hack to set connect time without needing NONBLOCK + poll ...
 
@@ -73,8 +82,8 @@ int OpenConnection(const char *hostname, int port)
 
     if (connect(sd, (struct sockaddr *)&addr, sizeof(addr)) != 0)
     {
+        perror("connect");
         close(sd);
-        // perror(hostname);
         return -1;
     }
 
