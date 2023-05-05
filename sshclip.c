@@ -89,6 +89,12 @@ int OpenConnection(const char *hostname, int port)
         return -1;
     }
 
+    // reset to default (0) ...
+
+    conntime.tv_sec  = 0;
+    conntime.tv_usec = 0;
+    setsockopt(sd, SOL_SOCKET, SO_SNDTIMEO, &conntime, sizeof(conntime));
+
     return sd;
 }
 
