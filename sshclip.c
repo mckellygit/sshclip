@@ -25,6 +25,7 @@
 #include <netdb.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
+#include <errno.h>
 
 #define CLIPBOARD_PORT 22222
 
@@ -82,11 +83,16 @@ int OpenConnection(const char *hostname, int port)
 
     // -----------
 
+    errno = 0;
     if (connect(sd, (struct sockaddr *)&addr, sizeof(addr)) != 0)
     {
+        int err = errno;
         perror("connect");
         close(sd);
-        return -1;
+        if (err == ECONNREFUSED)
+            return -88;
+        else
+            return -1;
     }
 
     // reset to default (0) ...
@@ -234,7 +240,10 @@ int main(int argc, char *argv[])
     {
         if (use_tls)
             SSL_CTX_free(ctx);
-        exit(1);
+        if (sock1 == -88)
+            exit(88);
+        else
+            exit(1);
     }
 
     // ---------------
