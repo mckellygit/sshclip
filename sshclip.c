@@ -180,8 +180,8 @@ int main(int argc, char *argv[])
     int sock1;
     SSL *ssl = NULL;
     int bytes;
-    char *cert_file = NULL;
-    char *priv_key = NULL;
+    char cert_file[256] = { "" };
+    char priv_key[256] = { "" };
 
     char *ptr = getenv("LC_MONETARY");
     if (ptr != NULL)
@@ -213,12 +213,57 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (argc == 3)
+    int rmlastnl = 0;
+    int has_sc = 0;
+    char sc_file[256] = { "" };
+    int has_tls = 0;
+
+    if (argc > 1)
     {
-        cert_file = argv[1];
-        priv_key = argv[2];
-        use_tls = 1;
+        int ix = 1;
+        while (ix < argc)
+        {
+            if ( (strcmp(argv[ix], "-rmlastnl") == 0) || (strcmp(argv[ix], "--rmlastnl") == 0) )
+                rmlastnl = 1;
+            else if ( (strcmp(argv[ix], "-sc") == 0) || (strcmp(argv[ix], "--sc") == 0) )
+            {
+                if ((ix+1) < argc)
+                {
+                    strcpy(sc_file, argv[ix+1]);
+                    has_sc++;
+                    ix++;
+                }
+            }
+            else if ( (strcmp(argv[ix], "-cert") == 0) || (strcmp(argv[ix], "--cert") == 0) )
+            {
+                if ((ix+1) < argc)
+                {
+                    strcpy(cert_file, argv[ix+1]);
+                    has_tls++;
+                    ix++;
+                }
+            }
+            else if ( (strcmp(argv[ix], "-key") == 0) || (strcmp(argv[ix], "--key") == 0) )
+            {
+                if ((ix+1) < argc)
+                {
+                    strcpy(priv_key, argv[ix+1]);
+                    has_tls++;
+                    ix++;
+                }
+            }
+            ix++;
+        }
     }
+
+    // printf("rmlastnl = %u\n", rmlastnl);
+    // printf("has_sc   = %u\n", has_sc);
+    // printf("sc_file  = %s\n", sc_file);
+    // printf("cert_file= %s\n", cert_file);
+    // printf("priv_key = %s\n", priv_key);
+
+    if (has_tls > 1)
+        use_tls = 1;
 
     if (use_tls)
     {
@@ -325,6 +370,19 @@ int main(int argc, char *argv[])
     
             buf[rlen] = 0;
     
+            if ( (rmlastnl) && (rlen > 0) )
+            {
+                if (buf[rlen-1] == '\n')
+                    buf[rlen-1] = '\0';
+            }
+
+            if (has_sc)
+            {
+                // sc_file could be string -1, 0, 1 or a real file ...
+                // if file and does not exist then its like a 1 ...
+                // if file and does exist then read -1, 0, 1 value from file ...
+            }
+
             printf("%s", buf);
             fflush(NULL);
     
@@ -384,7 +442,20 @@ int main(int argc, char *argv[])
         // fprintf(stderr, "rlen = %d\n", rlen);
     
         buf[rlen] = 0;
+
+        if ( (rmlastnl) && (rlen > 0) )
+        {
+            if (buf[rlen-1] == '\n')
+                buf[rlen-1] = '\0';
+        }
     
+        if (has_sc)
+        {
+            // sc_file could be string -1, 0, 1 or a real file ...
+            // if file and does not exist then its like a 1 ...
+            // if file and does exist then read -1, 0, 1 value from file ...
+        }
+
         printf("%s", buf);
         fflush(NULL);
     
