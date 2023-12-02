@@ -56,6 +56,8 @@ char *run_cmd_get_output(int *clen)
 
     *clen = 0;
 
+    // add --rmlastnl here ?
+
     FILE *fp = popen("myclip -o", "r");
     if (fp == NULL)
     {
